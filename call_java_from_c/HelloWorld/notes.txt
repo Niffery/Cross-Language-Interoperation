@@ -1,0 +1,2 @@
+gcc -I links with a library file
+gcc -L looks in directory for library files
