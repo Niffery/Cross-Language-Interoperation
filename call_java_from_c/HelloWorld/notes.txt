@@ -1,2 +1,15 @@
-gcc -I links with a library file
+gcc -l links with a library file
 gcc -L looks in directory for library files
+gcc -I adds include directory of header files
+
+what libraries should gcc specify when compiling
+for -I 	JAVA_HOME/include
+	
+for -L 	JAVA_HOME/jre/lib/jli
+	JAVA_HOME/jre/lib/server //this directory should be included always
+
+for -l	jli
+	jvm //this directory should be included always
+
+maybe jli is not needed.
+	
