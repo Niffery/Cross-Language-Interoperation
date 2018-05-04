@@ -13,3 +13,98 @@ for -l	jli
 
 maybe jli is not needed.
 	
+
+	
+this is how we could compile through
+gcc -I $JAVA_HOME/include -I $JAVA_HOME/include/linux
+/ -L $JAVA_HOME/jre/lib/server  hello.c -o hello
+
+/***************************************************************
+****************************************************************/
+
+Creating a JVM from a C Program
+
+First, here's the completed C program for reference. Our program dispenses with niceties like error checking that you, of course, would like to do in your real programs:
+
+#include &lt;stdio.h>
+#include &lt;jni.h>
+
+JNIEnv* create_vm() {
+	JavaVM* jvm;
+	JNIEnv* env;
+	JavaVMInitArgs args;
+	JavaVMOption options[1];
+	
+	/* There is a new JNI_VERSION_1_4, but it doesn't add anything for the purposes of our example. */
+	args.version = JNI_VERSION_1_2;
+	args.nOptions = 1;
+	options[0].optionString = "-Djava.class.path=c:\\projects\\local\\inonit\\classes";
+	args.options = options;
+	args.ignoreUnrecognized = JNI_FALSE;
+
+	JNI_CreateJavaVM(&jvm, (void **)&env, &args);
+	return env;
+}
+
+void invoke_class(JNIEnv* env) {
+	jclass helloWorldClass;
+	jmethodID mainMethod;
+	jobjectArray applicationArgs;
+	jstring applicationArg0;
+
+	helloWorldClass = (*env)->FindClass(env, "example/jni/InvocationHelloWorld");
+
+	mainMethod = (*env)->GetStaticMethodID(env, helloWorldClass, "main", "([Ljava/lang/String;)V");
+
+	applicationArgs = (*env)->NewObjectArray(env, 1, (*env)->FindClass(env, "java/lang/String"), NULL);
+	applicationArg0 = (*env)->NewStringUTF(env, "From-C-program");
+	(*env)->SetObjectArrayElement(env, applicationArgs, 0, applicationArg0);
+
+	(*env)->CallStaticVoidMethod(env, helloWorldClass, mainMethod, applicationArgs);
+}
+
+
+int main(int argc, char **argv) {
+	JNIEnv* env = create_vm();
+	invoke_class( env );
+}
+
+In this section, we're going to look at the create_vm() function. This function creates the JVM and returns a JNI interface pointer.
+
+The function's main task is to invoke the JNI_CreateJavaVM() function. That function's signature is the following:
+
+jint JNI_CreateJavaVM(JavaVM **p_vm, JNIEnv **p_env, void *vm_args);
+
+The first argument is a pointer to a JavaVM pointer. The JavaVM structure can be used to attach and detach native threads to/from the virtual machine, and (sort of) to destroy the VM (destroying a VM is not supported as of JDK 1.4. The DestroyJavaVM call simply waits until all user threads besides the current thread die, and then returns an error code). Our program (somewhat unrealistically) discards the JavaVM pointer when create_vm() returns; one would normally want to provide access to it so that the attach/detach/destroy functionality was available to the C program.
+
+The second argument is a pointer to a JNIEnv pointer. A JNIEnv structure is the main workhorse for JNI programming. It roughly corresponds to a particular Java thread. The JNIEnv returned from JNI_CreateJavaVM(), thus, represents the VM's main thread. We return it from create_vm() because our C program will need it in order to actually launch our Java program.
+
+The third argument is a pointer to an arbitrary pointer, and consists of the VM arguments. In JDK 1.1, there was a structure (JDK1_1InitArgs) which contained VM initialization arguments (including stack size, heap size, etc.). In JDK 1.2, the (inflexible) JDK1_1InitArgs structure is replaced by a structure which consists of (essentially) an array of strings, containing the arguments to pass to the VM. It is this form we use in our program. Here are the definitions:
+
+typedef struct JavaVMInitArgs {
+	jint version; 
+	//	must be JNI_VERSION_1_2 or JNI_VERSION_1_4 or JVM will 
+	//	interpret pointer as a JDK1_1InitArgs
+
+	jint nOptions; // number of options
+	JavaVMOption *options; // see definition of JavaVMOption below
+
+	jboolean ignoreUnrecognized; 
+	//	if JNI_TRUE, ignore options VM does not understand; 
+	//	otherwise return JNI_ERR if there are any unrecognized options
+} JavaVMInitArgs;
+
+typedef struct JavaVMOption {
+	char *optionString; // a string containing the argument
+
+	void *extraInfo; 
+	//	not important except for esoteric options
+	//	(e.g., providing alternative exit() hook)
+
+} JavaVMOption;
+
+We create a JavaVMInitArgs which declares a version of JNI_VERSION_1_2. There are some new enhancements to JNI in Java 1.4, allowing things like access to the native byte buffers used by the java.nio package and the ability to attach native threads to the JVM as Java daemon threads. Since neither of these are useful to us, we'll leave this value as-is.
+
+Please also refer to this link:
+https://docs.oracle.com/javase/6/docs/technotes/guides/jni/spec/invocation.html 
+http://enos.itcollege.ee/~jpoial/oop/lugemist/JDCBook/JDCBook/jniexamp.html

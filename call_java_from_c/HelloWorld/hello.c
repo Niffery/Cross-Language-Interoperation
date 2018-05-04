@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <jni.h>
-
+#include "HelloWorld.h"
 JNIEnv* create_vm(JavaVM **jvm)
 {
     JNIEnv* env;
@@ -8,7 +8,7 @@ JNIEnv* create_vm(JavaVM **jvm)
     JavaVMOption options;
     args.version = JNI_VERSION_1_6;
     args.nOptions = 1;
-    options.optionString = "-Djava.class.path=./";
+    options.optionString = "-Djava.class.path=. HelloWorld";
     args.options = &options;
     args.ignoreUnrecognized = 0;
     int rv;
