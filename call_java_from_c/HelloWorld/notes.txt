@@ -108,3 +108,227 @@ We create a JavaVMInitArgs which declares a version of JNI_VERSION_1_2. There ar
 Please also refer to this link:
 https://docs.oracle.com/javase/6/docs/technotes/guides/jni/spec/invocation.html 
 http://enos.itcollege.ee/~jpoial/oop/lugemist/JDCBook/JDCBook/jniexamp.html
+
+
+
+
+
+
+About the Example
+You can call code written in any programming language from a program written in the Java language by declaring a native Java method, loading the library that contains the native code, and then calling the native method. The ReadFile source code below does exactly this.
+However, successfully running the program requires a few additional steps beyond compiling the Java language source file. After you compile, but before you run the example, you have to generate a header file. The native code implements the function defintions contained in the generated header file and implements the business logic as well. The following sections walk through all the steps.
+
+
+import java.util.*;
+
+
+
+class ReadFile {
+
+//Native method declaration
+
+  native byte[] loadFile(String name);
+
+//Load the library
+
+  static {
+
+    System.loadLibrary("nativelib");
+
+  }
+
+
+
+  public static void main(String args[]) {
+
+    byte buf[];
+
+//Create class instance
+
+    ReadFile mappedFile=new ReadFile();
+
+//Call native method to load ReadFile.java
+
+    buf=mappedFile.loadFile("ReadFile.java");
+
+//Print contents of ReadFile.java
+
+    for(int i=0;i<buf.length;i++) {
+
+      System.out.print((char)buf[i]);
+
+    }
+
+  }
+
+}
+
+Native Method Declaration
+The native declaration provides the bridge to run the native function in the Java1 virtual machine. In this example, the loadFile function maps onto a C function called Java_ReadFile_loadFile. The function implementation accepts a String that represents a file name and returns the contents of that file in the byte array.
+
+  native byte[] loadFile(String name);
+
+Load the Library
+The library containing the native code implementation is loaded by a call to System.loadLibrary(). Placing this call in a static initializer ensures this library is only loaded once per class. The library can be loaded outside of the static block if your application requires it. You might need to configure your environment so the loadLibrary method can find your native code library.
+
+  static {
+
+    System.loadLibrary("nativelib");
+
+  }
+
+Compile the Program
+To compile the program, just run the javac compiler command as you normally would:
+
+  javac ReadFile.java
+
+Next, you need to generate a header file with the native method declaration and implement the native method to call the C functions for loading and reading a file.
+Generate the Header File
+To generate a a header file, run the javah command on the ReadFile class. In this example, the generated header file is named ReadFile.h. It provides a method signature that you have to use when you implement the loadfile native function.
+
+  javah -jni ReadFile
+
+Method Signature
+The ReadFile.h header file defines the interface to map the Java language method to the native C function. It uses a method signature to map the arguments and return value of the Java language mappedfile.loadFile method to the loadFile native method in the nativelib library. Here is the loadFile native method mapping (method signature):
+
+  /*
+
+   * Class:     ReadFile
+
+   * Method:    loadFile
+
+   * Signature: (Ljava/lang/String;)[B
+
+   */
+
+  JNIEXPORT jbyteArray JNICALL Java_ReadFile_loadFile
+
+    (JNIEnv *, jobject, jstring);
+
+The method signature parameters function as follows:
+JNIEnv *: A pointer to the JNI environment. This pointer is a handle to the current thread in the Java virtual machine, and contains mapping and other hosuekeeping information.
+jobject: A reference to the method that called this native code. If the calling method is static, this parameter would be type jclass instead of jobject.
+jstring: The parameter supplied to the native method. In this example, it is the name of the file to be read.
+Implement the Native Method
+In this native C source file, the loadFile definition is a copy and paste of the C declaration contained in ReadFile.h. The definition is followed by the native method implementation. JNI provides a mapping for both C and C++ by default.
+
+
+
+JNIEXPORT jbyteArray JNICALL Java_ReadFile_loadFile
+
+  (JNIEnv * env, jobject jobj, jstring name) {
+
+    caddr_t m;
+
+    jbyteArray jb;
+
+    jboolean iscopy;
+
+    struct stat finfo;
+
+    const char *mfile = (*env)->GetStringUTFChars(
+
+                env, name, &iscopy);
+
+    int fd = open(mfile, O_RDONLY);
+
+
+
+    if (fd == -1) {
+
+      printf("Could not open %s\n", mfile);
+
+    }
+
+    lstat(mfile, &finfo);
+
+    m = mmap((caddr_t) 0, finfo.st_size,
+
+                PROT_READ, MAP_PRIVATE, fd, 0);
+
+    if (m == (caddr_t)-1) {
+
+      printf("Could not mmap %s\n", mfile);
+
+      return(0);
+
+    }
+
+    jb=(*env)->NewByteArray(env, finfo.st_size);
+
+    (*env)->SetByteArrayRegion(env, jb, 0, 
+
+	finfo.st_size, (jbyte *)m);
+
+    close(fd);
+
+    (*env)->ReleaseStringUTFChars(env, name, mfile);
+
+    return (jb);
+
+}
+
+You can approach calling an existing C function instead of implementing one, in one of two ways:
+
+Map the name generated by JNI to the existing C function name. The Language Issues section shows how to map between Xbase database functions and Java language code
+Use the shared stubs code available from the JNI page on the java.sun.com web site.
+Compile the Dynamic or Shared Object Library
+The library needs to be compiled as a dynamic or shared object library so it can be loaded at runtime. Static or archive libraries are compiled into an executable and cannot be loaded at runtime. The shared object or dynamic library for the loadFile example is compiled as follows:
+
+Gnu C/Linux:
+
+
+
+gcc  -o libnativelib.so -shared -Wl,-soname,libnative.so  
+
+  -I/export/home/jdk1.2/
+
+include -I/export/home/jdk1.2/include/linux nativelib.c  
+
+  -static -lc
+
+
+
+Gnu C++/Linux with Xbase
+
+
+
+g++ -o libdbmaplib.so -shared -Wl,-soname,libdbmap.so  
+
+  -I/export/home/jdk1.2/include 
+
+  -I/export/home/jdk1.2/include/linux 
+
+  dbmaplib.cc -static -lc -lxbase
+
+
+Win32/WinNT/Win2000
+
+
+
+cl -Ic:/jdk1.2/include 
+
+  -Ic:/jdk1.2/include/win32 
+
+  -LD nativelib.c -Felibnative.dll
+
+Run the Example
+To run the example, the Java virtual machine needs to be able to find the native library. To do this, set the library path to the current directory as follows:
+
+Unix or Linux:
+
+  LD_LIBRARY_PATH=`pwd`
+
+  export LD_LIBRARY_PATH
+
+
+
+
+
+Windows NT/2000/95:
+
+  set PATH=%path%;.
+
+With the library path properly specified for your platform, invoke the program as you normally would with the interpreter command:
+
+  java ReadFile
