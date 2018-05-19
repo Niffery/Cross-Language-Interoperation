@@ -1,0 +1,15 @@
+gcc hello_world.c -o hello_world 
+/usr/local/java/jdk1.8.0_171 can be replaced with your own path of $JAVA_PATH
+-L /usr/local/java/jdk1.8.0_171/jre/lib/amd64/server -ljvm 
+-I /usr/local/java/jdk1.8.0_171/include/ 
+-I /usr/local/java/jdk1.8.0_171/include/linux/
+
+Also, if confronted with error while loading shared libraries: libjvm.so: cannot open shared object file: No such file or directory, you should edit the ld.so.conf file.
+By using sudo find / -name libjvm.so
+it should exist in $JAVA_HOME/jre/lib/amd64/server/libjvm.so
+then append a new line to /etc/ld.so.conf
+$JAVA_HOME/jre/lib/amd64/server
+Run sudo /sbin/ldconfig
+
+To dump the signature/descriptor of each java method
+Use javap -s -p *.class

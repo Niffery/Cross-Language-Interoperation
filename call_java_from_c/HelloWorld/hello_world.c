@@ -1,17 +1,17 @@
 #include <stdio.h>
 #include <jni.h>
-#include "HelloWorld.h"
+
 JNIEnv* create_vm(JavaVM **jvm)
 {
     JNIEnv* env;
     JavaVMInitArgs args;
     JavaVMOption options;
-    args.version = JNI_VERSION_1_6;
+    args.version = JNI_VERSION_1_8;
     args.nOptions = 1;
-    options.optionString = "-Djava.class.path=. HelloWorld";
+    options.optionString = "-Djava.class.path=./";
     args.options = &options;
     args.ignoreUnrecognized = 0;
-    int rv;
+    jint rv;
     rv = JNI_CreateJavaVM(jvm, (void**)&env, &args);
     if (rv < 0 || !env)
         printf("Unable to Launch JVM %d\n",rv);
@@ -36,9 +36,8 @@ void invoke_class(JNIEnv* env)
     printf("%d squared is %d\n", number,
         (*env)->CallStaticIntMethod(env, hello_world_class, square_method, number));
     printf("%d raised to the %d power is %d\n", number, exponent,
-        (*env)->CallStaticIntMethod(env, hello_world_class, power_method, number, exponent));
+        (*env)->CallStaticIntMethod(env, hello_world_class, power_method, number, exponent));   
 }
-
 int main(int argc, char **argv)
 {
     JavaVM *jvm;
