@@ -1,0 +1,82 @@
+Compiled from "MicroWave.java"
+public class MicroWave extends java.lang.Thread {
+  private int hour;
+    descriptor: I
+  private int minutes;
+    descriptor: I
+  private int second;
+    descriptor: I
+  private boolean isRun;
+    descriptor: Z
+  public MicroWave();
+    descriptor: ()V
+
+  public void run();
+    descriptor: ()V
+
+  public int getHour();
+    descriptor: ()I
+
+  public void addHour(int);
+    descriptor: (I)V
+
+  public int getMinutes();
+    descriptor: ()I
+
+  public void addMinutes(int);
+    descriptor: (I)V
+
+  public int getSecond();
+    descriptor: ()I
+
+  public void setHour(int);
+    descriptor: (I)V
+
+  public void setMinutes(int);
+    descriptor: (I)V
+
+  public void setSecond(int);
+    descriptor: (I)V
+
+  public void addSecond(int);
+    descriptor: (I)V
+
+  public void setIsRun(boolean);
+    descriptor: (Z)V
+
+  public boolean isRun();
+    descriptor: ()Z
+
+  static boolean access$000(MicroWave);
+    descriptor: (LMicroWave;)Z
+
+  static int access$100(MicroWave);
+    descriptor: (LMicroWave;)I
+
+  static int access$110(MicroWave);
+    descriptor: (LMicroWave;)I
+
+  static int access$102(MicroWave, int);
+    descriptor: (LMicroWave;I)I
+
+  static int access$200(MicroWave);
+    descriptor: (LMicroWave;)I
+
+  static int access$210(MicroWave);
+    descriptor: (LMicroWave;)I
+
+  static int access$202(MicroWave, int);
+    descriptor: (LMicroWave;I)I
+
+  static int access$300(MicroWave);
+    descriptor: (LMicroWave;)I
+
+  static int access$310(MicroWave);
+    descriptor: (LMicroWave;)I
+
+  static int access$302(MicroWave, int);
+    descriptor: (LMicroWave;I)I
+
+  static boolean access$002(MicroWave, boolean);
+    descriptor: (LMicroWave;Z)Z
+}
