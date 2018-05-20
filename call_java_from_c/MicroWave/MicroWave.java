@@ -13,7 +13,12 @@ public class MicroWave extends Thread{
         second = 0;
         isRun = false;
     }
-
+    
+	public static int sum(int a, int b){
+		System.out.println(a);
+		System.out.println(b);
+		return a+b;
+	}
     @Override
     public void run() {
         Timer timer = new Timer();

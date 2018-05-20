@@ -1,0 +1,8 @@
+Compiled from "MicroWaveMain.java"
+public class MicroWaveMain {
+  public MicroWaveMain();
+    descriptor: ()V
+
+  public static void main(java.lang.String[]);
+    descriptor: ([Ljava/lang/String;)V
+}
