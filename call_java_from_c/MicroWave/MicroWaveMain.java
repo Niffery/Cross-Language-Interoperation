@@ -15,5 +15,10 @@ public class MicroWaveMain {
                 microWaveWindow.pack();//动态调整窗口大小
             }
         },0,50);
+	/*try{
+		Thread.currentThread().sleep(100000);
+	}catch(Exception e){
+		e.printStackTrace();	
+	}*/
     }
 }
