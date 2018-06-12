@@ -4,7 +4,7 @@ research is a folder including all materials during this quarter
 
 How to use:
 
-Download CS261_ImageBlur.apk to your Android and install
+Download CS261_ImageBlur.apk to your Android phone and install
 
 Move seek bar to change radius
 
